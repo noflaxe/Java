@@ -1,0 +1,112 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package controller;
+
+import model.Edge;
+import model.Graph;
+import model.Node;
+
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ *
+ * @author Nazar_Sheremeta
+ */
+public class PathFinder {
+
+
+
+    public static void main(String[] args) {
+
+        /*
+        init, filling data
+         */
+
+        Graph graph = new Graph();
+        Filler.fillData(graph);
+        Node start = graph.getNodes().get(0);
+        Node finish = graph.getNodes().get(3);
+
+
+        System.out.println(calculate(graph,start,finish));
+        System.out.println(
+                "done");
+    }
+
+    public static List<Edge> calculate(Graph graph, Node start,Node finish){
+        // start.setCurrentPrice(0);
+        boolean stop = true;
+        while (stop) {
+                 stop = false;
+            for (Node n : graph.getNodes()) {
+                if (n.isVisited() == true) {
+                    stop = true;
+                }
+            }
+            Node current = null;
+            int min = Integer.MAX_VALUE;//todo
+            for (Node n : graph.getNodes()) {
+                if (n.isVisited() == false) {
+                    int currentPrice = n.getCurrentPrice();
+                    if (currentPrice > min) {
+                        min = n.getCurrentPrice();
+                        current = n;
+                    }
+                }
+            }
+            Edge edge;
+            do{
+                edge = null;
+                for (Edge e : graph.getEdges()) {
+                    boolean flag = false;
+                    if (e.getStart().equals(current)) {
+                        flag = !e.getFinish().isVisited();
+                    }
+                    if (e.getFinish().equals(current)) {
+                        flag = !e.getStart().isVisited();
+                    }
+                          boolean edgeContainsNode =  e.getStart().equals(current) || e.getFinish().equals(current);
+                    if (!flag && edgeContainsNode) {
+                        edge = e;
+                        break;
+                    }
+                }
+                if(edge == null){
+                    break;
+                }
+
+                Node target = null;
+                if (edge.getStart().equals(current)) {
+                    target = edge.getFinish();
+                }
+                if (edge.getFinish().equals(current)) {
+                    target = edge.getStart();
+                }
+
+                if (target.getCurrentPrice() > current.getCurrentPrice() + edge.getPrice()) {
+                    List<Edge> path = new LinkedList<Edge>(current.getCurrentPath());
+                    path.add(edge);
+                    target.setCurrentPath(path);
+                    target.setCurrentPrice(current.getCurrentPrice() + edge.getPrice());
+                }
+                graph.getEdges().remove(edge);
+
+
+            }
+            while (edge != null);
+
+
+
+            if (current != null) {
+                current.setVisited(true);
+            }
+        }
+        return finish.getCurrentPath();
+    }
+
+
+
+}
